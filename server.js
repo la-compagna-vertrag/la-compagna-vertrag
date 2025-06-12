@@ -14,7 +14,6 @@ const upload = multer({ dest: 'uploads/' });
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session-Login
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -38,7 +37,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
- if (username === process.env.LOGIN_USER && password === process.env.LOGIN_PASS) {
+  if (username === process.env.LOGIN_USER && password === process.env.LOGIN_PASS) {
     req.session.loggedIn = true;
     res.redirect('/');
   } else {
@@ -46,7 +45,7 @@ app.post('/login', (req, res) => {
   }
 });
 
-// ⚠️ Sichtbare HTML-Seite im Root
+// Sichtbare HTML-Seite im Root
 app.use('/', isAuth, express.static(path.join(__dirname, 'public')));
 app.use('/uploads', isAuth, express.static(path.join(__dirname, 'uploads')));
 
@@ -78,9 +77,9 @@ app.post('/sende-vertrag', isAuth, async (req, res) => {
   const pdfPath = path.join(__dirname, 'uploads', filename);
   fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
 
-  // E-Mail mit Anhang (auch an Admin senden)
+  // E-Mail-Versand
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: 'gmail', // Achtung: evtl. durch z. B. smtp.ethereal.email ersetzen!
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS
@@ -90,7 +89,7 @@ app.post('/sende-vertrag', isAuth, async (req, res) => {
   try {
     await transporter.sendMail({
       from: process.env.MAIL_USER,
-      to: [email, 'deine.email@beispiel.ch'], // <--- eigene E-Mail hier eintragen!
+      to: [email, 'deine.email@beispiel.ch'], // Kopie an Admin-Adresse eintragen
       subject: "Dein Orchestervertrag – La Compagna",
       text: "Anbei dein Vertrag als PDF.",
       attachments: [{
@@ -100,15 +99,4 @@ app.post('/sende-vertrag', isAuth, async (req, res) => {
       }]
     });
 
-    res.json({ message: '✅ E-Mail an Musiker & Kopie an Organisation gesendet. PDF gespeichert.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: '❌ Fehler beim E-Mail-Versand.' });
-  }
-});
-
-// Start
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server läuft auf http://localhost:${PORT}`);
-});
+    res.json({ message: '✅ E-Mail an Musiker
