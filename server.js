@@ -1,3 +1,5 @@
+const express = require('express');
+const app = express(); //
 // Vertrag generieren und als Download liefern
 app.post('/sende-vertrag', isAuth, async (req, res) => {
   const { text, vorname, nachname } = req.body;
