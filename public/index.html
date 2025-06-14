@@ -37,24 +37,22 @@
     <div id="output" class="whitespace-pre-wrap bg-blue-50 p-4 mt-6 rounded border border-blue-200"></div>
   </div>
 
-  <script>
-    let vertragstext = "";
+ <script>
+  async function generiereVertrag() {
+    const data = {
+      vorname: document.getElementById('vorname').value,
+      nachname: document.getElementById('nachname').value,
+      adresse: document.getElementById('adresse').value,
+      instrument: document.getElementById('instrument').value,
+      projekt: document.getElementById('projekt').value,
+      proben: document.getElementById('proben').value,
+      werke: document.getElementById('werke').value,
+      stimmton: document.getElementById('stimmton').value,
+      besetzung: document.getElementById('besetzung').value,
+      bezahlung: document.getElementById('bezahlung').value
+    };
 
-    function generiereVertrag() {
-      const data = {
-        vorname: document.getElementById('vorname').value,
-        nachname: document.getElementById('nachname').value,
-        adresse: document.getElementById('adresse').value,
-        instrument: document.getElementById('instrument').value,
-        projekt: document.getElementById('projekt').value,
-        proben: document.getElementById('proben').value,
-        werke: document.getElementById('werke').value,
-        stimmton: document.getElementById('stimmton').value,
-        besetzung: document.getElementById('besetzung').value,
-        bezahlung: document.getElementById('bezahlung').value
-      };
-
-      vertragstext = `Vertragliche Vereinbarung
+    const vertrag = `Vertragliche Vereinbarung
 
 Zwischen Arbeitnehmer: ${data.vorname} ${data.nachname}, ${data.adresse}
 Instrument / Dienstleistung: ${data.instrument}
@@ -76,32 +74,26 @@ Bezahlung: ${data.bezahlung}
 
 Ort / Datum: _____________   Unterschrift Musiker: ______________`;
 
-      document.getElementById('output').innerText = vertragstext;
+    // Zeige Vorschau
+    document.getElementById('output').innerText = vertrag;
+
+    // An Server senden und PDF-Download auslösen
+    const res = await fetch('/sende-vertrag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, text: vertrag })
+    });
+
+    const result = await res.json();
+    if (res.ok && result.filename) {
+      const link = document.createElement('a');
+      link.href = `/uploads/${result.filename}`;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert('Fehler beim Erstellen der PDF-Datei.');
     }
-
-    async function sendeVertrag() {
-      const email = document.getElementById('email').value;
-      const vorname = document.getElementById('vorname').value;
-      const nachname = document.getElementById('nachname').value;
-
-      const res = await fetch('/sende-vertrag', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, vorname, nachname, text: vertragstext })
-      });
-
-      const data = await res.json();
-      alert(data.message || "Fehler beim Senden.");
-    }
-  </script>
-
-  <style>
-    .input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.375rem;
-    }
-  </style>
-</body>
-</html>
+  }
+</script>
