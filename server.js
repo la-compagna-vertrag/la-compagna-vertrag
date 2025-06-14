@@ -4,7 +4,7 @@ const multer = require('multer');
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
-const { jsPDF } = require('jspdf');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
 require('dotenv').config();
 
 const app = express();
@@ -22,9 +22,9 @@ app.use(session({
 const isAuth = (req, res, next) => {
   if (req.session.loggedIn) return next();
   res.redirect('/login');
-};
+});
 
-// Login-Seite
+// Login
 app.get('/login', (req, res) => {
   res.send(`<form method="POST" action="/login" style="margin:2em;font-family:sans-serif">
               <h2>La Compagna Login</h2>
@@ -44,11 +44,11 @@ app.post('/login', (req, res) => {
   }
 });
 
-// Öffentliche Routen
+// Statische Inhalte
 app.use('/', isAuth, express.static(path.join(__dirname, 'public')));
 app.use('/uploads', isAuth, express.static(path.join(__dirname, 'uploads')));
 
-// Excel → JSON
+// Musikerdaten (Excel)
 app.get('/musiker', isAuth, (req, res) => {
   const wb = xlsx.readFile('./database/musiker.xlsx');
   const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -56,30 +56,40 @@ app.get('/musiker', isAuth, (req, res) => {
   res.json(data);
 });
 
-// Datei-Upload
+// Upload
 app.post('/upload', isAuth, upload.array('files'), (req, res) => {
   res.json({ uploaded: req.files.map(f => f.filename) });
 });
 
-// Vertrag erstellen und Download-Link zurückgeben
+// PDF-Erstellung
 app.post('/sende-vertrag', isAuth, async (req, res) => {
   const { text, vorname, nachname } = req.body;
-
-  const doc = new jsPDF();
-  const lines = doc.splitTextToSize(text, 180);
-  doc.text(lines, 10, 10);
-  const pdfBuffer = doc.output('arraybuffer');
-
   const filename = `Vertrag_${vorname}_${nachname}_${Date.now()}.pdf`;
   const pdfPath = path.join(__dirname, 'uploads', filename);
-  fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
 
-  const downloadUrl = `/uploads/${filename}`;
-  res.json({ message: '✅ PDF gespeichert', url: downloadUrl });
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]); // A4
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontSize = 12;
+
+  const wrapped = text.match(/.{1,100}/g) || [];
+  wrapped.forEach((line, i) => {
+    page.drawText(line, {
+      x: 50,
+      y: 800 - i * 20,
+      size: fontSize,
+      font
+    });
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(pdfPath, pdfBytes);
+
+  res.json({ message: '✅ PDF erstellt', url: `/uploads/${filename}` });
 });
 
 // Start
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server läuft auf http://localhost:${PORT}`);
+  console.log(`✅ Server läuft unter http://localhost:${PORT}`);
 });
