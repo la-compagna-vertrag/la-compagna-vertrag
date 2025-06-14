@@ -3,97 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vertragserstellung La Compagna</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Vertrag erstellen</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-100 font-sans">
-  <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
-    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-8">Vertragserstellung Orchester</h1>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-3xl">
+    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Vertrag erstellen</h1>
 
     <form id="vertragForm" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div><label class="font-medium">Vorname</label><input type="text" id="vorname" required class="input"></div>
-        <div><label class="font-medium">Name</label><input type="text" id="nachname" required class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">Adresse</label><input type="text" id="adresse" required class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">Instrument / Stimme / Dienstleistung</label><input type="text" id="instrument" required class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">Projekttitel</label><input type="text" id="projekt" required class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">Proben (Datum / Zeit / Ort)</label><textarea id="proben" class="input"></textarea></div>
-        <div class="md:col-span-2"><label class="font-medium">Gespielte Werke</label><textarea id="werke" class="input"></textarea></div>
-        <div class="md:col-span-2"><label class="font-medium">Stimmton</label><input type="text" id="stimmton" class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">Besetzung</label><textarea id="besetzung" class="input"></textarea></div>
-        <div class="md:col-span-2"><label class="font-medium">Bezahlung</label><input type="text" id="bezahlung" class="input"></div>
-        <div class="md:col-span-2"><label class="font-medium">E-Mail-Adresse Musiker</label><input type="email" id="email" required class="input"></div>
+        <input required id="vorname" placeholder="Vorname" class="input" />
+        <input required id="nachname" placeholder="Nachname" class="input" />
+        <input required id="adresse" placeholder="Adresse" class="input md:col-span-2" />
+        <input required id="instrument" placeholder="Instrument / Dienstleistung" class="input md:col-span-2" />
+        <input required id="projekt" placeholder="Projekttitel" class="input md:col-span-2" />
+        <textarea id="proben" placeholder="Proben (Datum / Zeit / Ort)" class="input md:col-span-2"></textarea>
+        <textarea id="werke" placeholder="Gespielte Werke" class="input md:col-span-2"></textarea>
+        <input id="stimmton" placeholder="Stimmton" class="input md:col-span-2" />
+        <textarea id="besetzung" placeholder="Besetzung" class="input md:col-span-2"></textarea>
+        <input id="bezahlung" placeholder="Bezahlung" class="input md:col-span-2" />
       </div>
 
-      <div class="flex justify-center gap-4 mt-6">
-        <button type="button" onclick="generiereVertrag()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Vertrag generieren</button>
-    <button type="button" onclick="generiereVertrag()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-  PDF erstellen & herunterladen
-</button>
-
+      <div class="text-center mt-6">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg text-lg">
+          PDF erstellen & herunterladen
+        </button>
       </div>
     </form>
 
-    <div id="output" class="whitespace-pre-wrap bg-blue-50 p-4 mt-6 rounded border border-blue-200"></div>
+    <div id="meldung" class="mt-6 text-center text-green-600 font-medium"></div>
   </div>
 
- <script>
-  async function generiereVertrag() {
-    const data = {
-      vorname: document.getElementById('vorname').value,
-      nachname: document.getElementById('nachname').value,
-      adresse: document.getElementById('adresse').value,
-      instrument: document.getElementById('instrument').value,
-      projekt: document.getElementById('projekt').value,
-      proben: document.getElementById('proben').value,
-      werke: document.getElementById('werke').value,
-      stimmton: document.getElementById('stimmton').value,
-      besetzung: document.getElementById('besetzung').value,
-      bezahlung: document.getElementById('bezahlung').value
-    };
+  <script>
+    document.getElementById('vertragForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-    const vertrag = `Vertragliche Vereinbarung
+      const {
+        jsPDF
+      } = window.jspdf;
+      const vorname = document.getElementById('vorname').value;
+      const nachname = document.getElementById('nachname').value;
 
-Zwischen Arbeitnehmer: ${data.vorname} ${data.nachname}, ${data.adresse}
-Instrument / Dienstleistung: ${data.instrument}
-Arbeitgeber: Verein Orchester La Compagna, Zurlindenstr. 293, 8003 Zürich
+      const vertragstext = `
+Vertragliche Vereinbarung
 
-Projekt: ${data.projekt}
+Zwischen: ${vorname} ${nachname}, ${document.getElementById('adresse').value}
+Instrument/Dienstleistung: ${document.getElementById('instrument').value}
+Projekt: ${document.getElementById('projekt').value}
 
-Proben: ${data.proben}
+Proben: ${document.getElementById('proben').value}
 
-Werke: ${data.werke}
+Werke: ${document.getElementById('werke').value}
 
-Stimmton: ${data.stimmton}
+Stimmton: ${document.getElementById('stimmton').value}
 
-Besetzung: ${data.besetzung}
+Besetzung: ${document.getElementById('besetzung').value}
 
-Bezahlung: ${data.bezahlung}
+Bezahlung: ${document.getElementById('bezahlung').value}
 
 (Weitere Vertragsbedingungen laut Standardvertrag)
 
-Ort / Datum: _____________   Unterschrift Musiker: ______________`;
+Ort / Datum: _____________      Unterschrift Musiker: ______________`;
 
-    // Zeige Vorschau
-    document.getElementById('output').innerText = vertrag;
-
-    // An Server senden und PDF-Download auslösen
-    const res = await fetch('/sende-vertrag', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, text: vertrag })
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(vertragstext, 180);
+      doc.text(lines, 10, 10);
+      doc.save(`Vertrag_${vorname}_${nachname}.pdf`);
     });
+  </script>
 
-    const result = await res.json();
-    if (res.ok && result.filename) {
-      const link = document.createElement('a');
-      link.href = `/uploads/${result.filename}`;
-      link.download = result.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      alert('Fehler beim Erstellen der PDF-Datei.');
+  <style>
+    .input {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      width: 100%;
     }
-  }
-</script>
+  </style>
+</body>
+</html>
