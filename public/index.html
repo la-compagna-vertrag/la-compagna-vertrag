@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vertrag erstellen</title>
+  <title>Vertrag erstellen – La Compagna</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-3xl">
-    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Vertrag erstellen</h1>
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-3xl">
+    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Vertragserstellung Orchester</h1>
 
     <form id="vertragForm" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -27,7 +27,7 @@
 
       <div class="text-center mt-6">
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg text-lg">
-          PDF erstellen & herunterladen
+          📄 PDF erstellen & herunterladen
         </button>
       </div>
     </form>
@@ -39,26 +39,28 @@
     document.getElementById('vertragForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const {
-        jsPDF
-      } = window.jspdf;
-      const vorname = document.getElementById('vorname').value;
-      const nachname = document.getElementById('nachname').value;
+      const { jsPDF } = window.jspdf;
+      const vorname = document.getElementById('vorname').value.trim();
+      const nachname = document.getElementById('nachname').value.trim();
 
-      const vertragstext = `
+      const vertrag = `
 Vertragliche Vereinbarung
 
-Zwischen: ${vorname} ${nachname}, ${document.getElementById('adresse').value}
+Zwischen: ${vorname} ${nachname}
+Adresse: ${document.getElementById('adresse').value}
+
 Instrument/Dienstleistung: ${document.getElementById('instrument').value}
 Projekt: ${document.getElementById('projekt').value}
 
-Proben: ${document.getElementById('proben').value}
+Proben:
+${document.getElementById('proben').value}
 
-Werke: ${document.getElementById('werke').value}
+Werke:
+${document.getElementById('werke').value}
 
 Stimmton: ${document.getElementById('stimmton').value}
-
-Besetzung: ${document.getElementById('besetzung').value}
+Besetzung:
+${document.getElementById('besetzung').value}
 
 Bezahlung: ${document.getElementById('bezahlung').value}
 
@@ -67,9 +69,11 @@ Bezahlung: ${document.getElementById('bezahlung').value}
 Ort / Datum: _____________      Unterschrift Musiker: ______________`;
 
       const doc = new jsPDF();
-      const lines = doc.splitTextToSize(vertragstext, 180);
+      const lines = doc.splitTextToSize(vertrag, 180);
       doc.text(lines, 10, 10);
       doc.save(`Vertrag_${vorname}_${nachname}.pdf`);
+
+      document.getElementById('meldung').textContent = "✅ PDF wurde erfolgreich heruntergeladen.";
     });
   </script>
 
