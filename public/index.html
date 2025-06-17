@@ -1,88 +1,95 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vertrag erstellen – La Compagna</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Compagna Vertrag</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen flex items-center justify-center px-4">
-  <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-3xl">
-    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Vertragserstellung Orchester</h1>
+<body class="bg-blue-50 font-sans">
+  <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-2xl">
+    <h1 class="text-4xl font-bold text-center text-blue-800 mb-6">Orchestervertrag erstellen</h1>
 
-    <form id="vertragForm" class="space-y-4">
+    <form id="vertragForm" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input required id="vorname" placeholder="Vorname" class="input" />
-        <input required id="nachname" placeholder="Nachname" class="input" />
-        <input required id="adresse" placeholder="Adresse" class="input md:col-span-2" />
-        <input required id="instrument" placeholder="Instrument / Dienstleistung" class="input md:col-span-2" />
-        <input required id="projekt" placeholder="Projekttitel" class="input md:col-span-2" />
+        <input id="vorname" placeholder="Vorname" required class="input">
+        <input id="nachname" placeholder="Nachname" required class="input">
+        <input id="adresse" placeholder="Adresse" required class="input md:col-span-2">
+        <input id="instrument" placeholder="Instrument / Dienstleistung" required class="input md:col-span-2">
+        <input id="projekt" placeholder="Projekttitel" required class="input md:col-span-2">
         <textarea id="proben" placeholder="Proben (Datum / Zeit / Ort)" class="input md:col-span-2"></textarea>
         <textarea id="werke" placeholder="Gespielte Werke" class="input md:col-span-2"></textarea>
-        <input id="stimmton" placeholder="Stimmton" class="input md:col-span-2" />
+        <input id="stimmton" placeholder="Stimmton" class="input md:col-span-2">
         <textarea id="besetzung" placeholder="Besetzung" class="input md:col-span-2"></textarea>
-        <input id="bezahlung" placeholder="Bezahlung" class="input md:col-span-2" />
+        <input id="bezahlung" placeholder="Bezahlung" class="input md:col-span-2">
       </div>
 
-      <div class="text-center mt-6">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg text-lg">
-          📄 PDF erstellen & herunterladen
-        </button>
+      <div class="flex justify-center gap-4">
+        <button type="button" onclick="generierePDF()" class="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-xl">PDF erstellen und herunterladen</button>
       </div>
     </form>
 
-    <div id="meldung" class="mt-6 text-center text-green-600 font-medium"></div>
+    <a id="downloadLink" class="hidden mt-6 block text-center text-blue-600 underline">PDF herunterladen</a>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    document.getElementById('vertragForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-
+    async function generierePDF() {
       const { jsPDF } = window.jspdf;
-      const vorname = document.getElementById('vorname').value.trim();
-      const nachname = document.getElementById('nachname').value.trim();
+      const doc = new jsPDF();
 
-      const vertrag = `
-Vertragliche Vereinbarung
+      const data = {
+        vorname: document.getElementById('vorname').value,
+        nachname: document.getElementById('nachname').value,
+        adresse: document.getElementById('adresse').value,
+        instrument: document.getElementById('instrument').value,
+        projekt: document.getElementById('projekt').value,
+        proben: document.getElementById('proben').value,
+        werke: document.getElementById('werke').value,
+        stimmton: document.getElementById('stimmton').value,
+        besetzung: document.getElementById('besetzung').value,
+        bezahlung: document.getElementById('bezahlung').value,
+      };
 
-Zwischen: ${vorname} ${nachname}
-Adresse: ${document.getElementById('adresse').value}
+      const vertragText = `Vertragliche Vereinbarung\n\n
+Zwischen Arbeitnehmer: ${data.vorname} ${data.nachname}, ${data.adresse}
+Instrument / Dienstleistung: ${data.instrument}
+Arbeitgeber: Verein Orchester La Compagna, Zurlindenstr. 293, 8003 Zürich
 
-Instrument/Dienstleistung: ${document.getElementById('instrument').value}
-Projekt: ${document.getElementById('projekt').value}
-
-Proben:
-${document.getElementById('proben').value}
-
-Werke:
-${document.getElementById('werke').value}
-
-Stimmton: ${document.getElementById('stimmton').value}
-Besetzung:
-${document.getElementById('besetzung').value}
-
-Bezahlung: ${document.getElementById('bezahlung').value}
+Projekt: ${data.projekt}
+Proben: ${data.proben}
+Werke: ${data.werke}
+Stimmton: ${data.stimmton}
+Besetzung: ${data.besetzung}
+Bezahlung: ${data.bezahlung}
 
 (Weitere Vertragsbedingungen laut Standardvertrag)
 
-Ort / Datum: _____________      Unterschrift Musiker: ______________`;
+Ort / Datum: _____________   Unterschrift Musiker: ______________`;
 
-      const doc = new jsPDF();
-      const lines = doc.splitTextToSize(vertrag, 180);
+      const lines = doc.splitTextToSize(vertragText, 180);
       doc.text(lines, 10, 10);
-      doc.save(`Vertrag_${vorname}_${nachname}.pdf`);
 
-      document.getElementById('meldung').textContent = "✅ PDF wurde erfolgreich heruntergeladen.";
-    });
+      const filename = `Vertrag_${data.vorname}_${data.nachname}.pdf`;
+      doc.save(filename);
+
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('downloadLink');
+      link.href = url;
+      link.download = filename;
+      link.classList.remove('hidden');
+      link.textContent = 'Vertrag erfolgreich generiert – hier herunterladen';
+    }
   </script>
 
   <style>
     .input {
+      width: 100%;
       padding: 0.75rem;
       border: 1px solid #ccc;
       border-radius: 0.5rem;
-      width: 100%;
+      font-size: 1rem;
     }
   </style>
 </body>
