@@ -21,8 +21,7 @@ app.use(session({
 
 const isAuth = (req, res, next) => {
   if (req.session.loggedIn) return next();
-  res.redirect('/login');
-});
+  res.redirect('/login');}
 
 // Login
 app.get('/login', (req, res) => {
